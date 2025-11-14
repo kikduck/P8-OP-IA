@@ -1,8 +1,31 @@
+# Python
 /venv
-/DATA
+venv/
+env/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Data
+/DATA
+
+# IDE
+.vscode/
+.idea/
 .claude/
-# Ignore all .pt files except unet_mini and hrnet
+
+# Jupyter
+*.ipynb_checkpoints
+.ipynb_checkpoints/
+
+# Model files - Ignore all .pt files except unet_mini and hrnet
 train_models/*.pt
 !train_models/unet_mini_best.pt
 !train_models/hrnet_fpn_best.pt
+
+# Heroku
+*.log
+.env
+.env.local

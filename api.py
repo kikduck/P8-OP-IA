@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from PIL import Image
 import io
+import os
 from torchvision import transforms
 from model import UNetMini, build_hrnet, build_deeplabv3plus, UNetVGG16
 
@@ -46,20 +47,20 @@ AVAILABLE_MODELS = {
         "name": "DeepLabV3+",
         "description": "DeepLabV3+ avec encodeur ResNet50 (26.7M params)",
         "path": Path("train_models/deeplabv3plus_best.pt"),
-        "available": True
+        "available": False  # Not on Heroku (file too large)
     },
     "vgg16": {
         "name": "UNet-VGG16",
         "description": "UNet avec encodeur VGG16 (26.7M params)",
         "path": Path("train_models/unet_vgg16_best.pt"),
-        "available": True
+        "available": False  # Not on Heroku (file too large)
     }
 }
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Variables globales pour les modèles
-current_model_name = "hrnet"  # Modèle par défaut
+current_model_name = os.environ.get("DEFAULT_MODEL", "hrnet")  # Modèle par défaut
 model = None
 models_cache = {}  # Cache pour garder les modèles chargés en mémoire
 models_info_cache = {}  # Cache pour les infos des modèles (mIoU, etc.)
@@ -289,14 +290,17 @@ def predict():
         logger.error(f"Erreur lors de la prédiction: {e}")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    # Initialiser le cache des informations des modèles
-    logger.info("Initialisation du cache des modèles...")
-    init_models_info_cache()
+# Initialiser le cache des informations des modèles au démarrage
+logger.info("Initialisation du cache des modèles...")
+init_models_info_cache()
 
-    # Charger le modèle par défaut au démarrage
-    if load_model(current_model_name):
-        logger.info("Démarrage de l'API Flask...")
-        app.run(host="0.0.0.0", port=5000, debug=True)
-    else:
-        logger.error("Impossible de démarrer l'API sans modèle")
+# Charger le modèle par défaut au démarrage
+logger.info(f"Chargement du modèle par défaut: {current_model_name}")
+if not load_model(current_model_name):
+    logger.warning(f"Impossible de charger le modèle {current_model_name}, l'API démarrera sans modèle pré-chargé")
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+    logger.info(f"Démarrage de l'API Flask sur le port {port}...")
+    app.run(host="0.0.0.0", port=port, debug=debug)

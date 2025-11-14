@@ -1,0 +1,9 @@
+*.ipynb
+*.md
+.git
+.gitignore
+DATA/
+train_models/deeplabv3plus_best.pt
+train_models/unet_vgg16_best.pt
+__pycache__/
+.claude/

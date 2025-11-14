@@ -2,6 +2,7 @@
 import streamlit as st
 import requests
 from functools import lru_cache
+import os
 
 # --- Config de la page ---
 st.set_page_config(
@@ -10,13 +11,15 @@ st.set_page_config(
     layout="centered"
 )
 
+# URL de l'API (configurable via variable d'environnement)
+API_URL = os.environ.get("API_URL", "http://localhost:5000")
 
 # Fonction mise en cache pour récupérer la liste des modèles
 @st.cache_data(ttl=60)  # Cache pendant 60 secondes
 def get_available_models():
     """Récupère la liste des modèles depuis l'API (avec cache)"""
     try:
-        response = requests.get("http://localhost:5000/models", timeout=2)
+        response = requests.get(f"{API_URL}/models", timeout=5)
         if response.ok:
             return response.json()
         else:
@@ -65,9 +68,9 @@ if models_data:
         if st.sidebar.button("Charger ce modèle"):
             with st.spinner(f"Chargement du modèle {selected_model_name}..."):
                 load_response = requests.post(
-                    "http://localhost:5000/load_model",
+                    f"{API_URL}/load_model",
                     json={"model_name": selected_model_id},
-                    timeout=10
+                    timeout=30
                 )
                 if load_response.ok:
                     st.sidebar.success(f"✅ Modèle {selected_model_name} chargé !")
@@ -160,11 +163,10 @@ if uploaded_files:
     with col_btn2:
         if st.button("🔮 Prédire la segmentation", use_container_width=True):
             # Envoyer l'image à l'API
-            api_url = "http://localhost:5000/predict"
             files = {"image": (file_selected.name, file_selected.getvalue(), file_selected.type)}
             try:
                 with st.spinner("Segmentation en cours..."):
-                    response = requests.post(api_url, files=files)
+                    response = requests.post(f"{API_URL}/predict", files=files, timeout=60)
                 if response.ok:
                     # L'API retourne directement une image PNG
                     from io import BytesIO
