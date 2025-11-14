@@ -1,75 +1,110 @@
-# Guide de déploiement sur Heroku
+# Guide de déploiement
 
-## Prérequis
-- Compte Heroku
-- Heroku CLI installé
-- Git configuré
+## Vue d'ensemble
+- **API Flask** → Déployée sur Heroku
+- **Interface Streamlit** → Déployée sur Streamlit Cloud
 
-## Déploiement de l'API Flask
+---
 
-### 1. Installation de Heroku CLI
-```bash
-# Windows
-https://devcenter.heroku.com/articles/heroku-cli
+## 1. Déploiement de l'API Flask sur Heroku (via UI)
 
-# Vérifier l'installation
-heroku --version
+### Étape 1 : Préparer votre compte Heroku
+1. Créer un compte sur [https://heroku.com](https://heroku.com) (gratuit)
+2. Se connecter au Dashboard Heroku
+
+### Étape 2 : Créer une nouvelle application
+1. Cliquer sur **"New"** → **"Create new app"**
+2. Choisir un nom (ex: `mon-api-segmentation`)
+3. Sélectionner la région (Europe ou US)
+4. Cliquer sur **"Create app"**
+
+### Étape 3 : Connecter votre repo GitHub
+1. Dans l'onglet **"Deploy"** de votre app
+2. Section **"Deployment method"** → Sélectionner **"GitHub"**
+3. Cliquer sur **"Connect to GitHub"**
+4. Autoriser Heroku à accéder à votre compte GitHub
+5. Rechercher votre repo : `P8-OP-IA` (ou le nom de votre repo)
+6. Cliquer sur **"Connect"**
+
+### Étape 4 : Configurer le déploiement automatique (optionnel)
+1. Section **"Automatic deploys"**
+2. Sélectionner la branche `main`
+3. Cliquer sur **"Enable Automatic Deploys"**
+   - ✅ L'app se redéploiera automatiquement à chaque push sur `main`
+
+### Étape 5 : Déployer manuellement
+1. Section **"Manual deploy"**
+2. Sélectionner la branche `main`
+3. Cliquer sur **"Deploy Branch"**
+4. Attendre la fin du build (2-5 minutes)
+
+### Étape 6 : Configurer les variables d'environnement (optionnel)
+1. Aller dans l'onglet **"Settings"**
+2. Section **"Config Vars"** → Cliquer sur **"Reveal Config Vars"**
+3. Ajouter (optionnel) :
+   - `DEFAULT_MODEL` = `hrnet` (modèle par défaut)
+   - `FLASK_DEBUG` = `False`
+
+### Étape 7 : Vérifier que l'API fonctionne
+1. Cliquer sur **"Open app"** (en haut à droite)
+2. Vous devriez voir un JSON avec :
+   ```json
+   {
+     "message": "API Flask - Segmentation d'images",
+     "status": "running",
+     ...
+   }
+   ```
+3. Notez l'URL de votre API (ex: `https://mon-api-segmentation.herokuapp.com`)
+
+### Étape 8 : Tester les endpoints
+- **Health check** : `https://votre-app.herokuapp.com/health`
+- **Liste des modèles** : `https://votre-app.herokuapp.com/models`
+
+---
+
+## 2. Déploiement de l'interface Streamlit sur Streamlit Cloud
+
+### Étape 1 : Créer un compte Streamlit Cloud
+1. Aller sur [https://streamlit.io/cloud](https://streamlit.io/cloud)
+2. Se connecter avec votre compte GitHub
+
+### Étape 2 : Déployer l'application
+1. Cliquer sur **"New app"**
+2. Sélectionner votre repo GitHub : `kikduck/P8-OP-IA`
+3. **Branch** : `main`
+4. **Main file path** : `interface.py`
+5. Cliquer sur **"Advanced settings"**
+
+### Étape 3 : Configurer les variables d'environnement
+Dans **"Secrets"**, ajouter :
+```toml
+API_URL = "https://votre-app-heroku.herokuapp.com"
 ```
+⚠️ **IMPORTANT** : Remplacez par l'URL réelle de votre API Heroku !
 
-### 2. Connexion à Heroku
-```bash
-heroku login
-```
+### Étape 4 : Déployer
+1. Cliquer sur **"Deploy!"**
+2. Attendre 2-3 minutes
+3. L'interface sera accessible sur une URL comme : `https://votre-app.streamlit.app`
 
-### 3. Créer une application Heroku
-```bash
-# Créer l'application
-heroku create votre-nom-app-segmentation
+### Étape 5 : Vérifier
+1. L'interface devrait se charger
+2. La liste des modèles devrait apparaître dans la sidebar
+3. Vous pouvez uploader des images et faire des prédictions
 
-# Ou si vous avez déjà une app
-heroku git:remote -a votre-nom-app-segmentation
-```
+---
 
-### 4. Configurer les variables d'environnement (optionnel)
-```bash
-heroku config:set DEFAULT_MODEL=hrnet
-heroku config:set FLASK_DEBUG=False
-```
+## 3. Vérifier que tout fonctionne ensemble
 
-### 5. Déployer sur Heroku
-```bash
-git push heroku main
-```
+### Test complet :
+1. ✅ API Heroku accessible : `https://votre-api.herokuapp.com/health`
+2. ✅ Interface Streamlit chargée
+3. ✅ Liste des modèles visible dans la sidebar
+4. ✅ Upload d'image fonctionne
+5. ✅ Prédiction fonctionne
 
-### 6. Vérifier les logs
-```bash
-heroku logs --tail
-```
-
-### 7. Ouvrir l'application
-```bash
-heroku open
-```
-
-## Déploiement de l'interface Streamlit
-
-L'interface Streamlit doit être déployée séparément car Heroku ne supporte qu'un seul processus web.
-
-### Option 1: Streamlit Cloud (recommandé)
-1. Aller sur https://streamlit.io/cloud
-2. Connecter votre repo GitHub
-3. Sélectionner `interface.py` comme fichier principal
-4. Ajouter les variables d'environnement:
-   - `API_URL`: URL de votre API Heroku (ex: `https://votre-app.herokuapp.com`)
-5. Déployer
-
-### Option 2: Heroku séparé pour Streamlit
-Créer un nouveau `Procfile.streamlit`:
-```
-web: streamlit run interface.py --server.port=$PORT --server.address=0.0.0.0
-```
-
-Puis créer une nouvelle app Heroku pour l'interface.
+---
 
 ## Structure des fichiers
 
