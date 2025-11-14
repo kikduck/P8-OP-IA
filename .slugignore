@@ -2,8 +2,14 @@
 *.md
 .git
 .gitignore
+.gitattributes
 DATA/
 train_models/deeplabv3plus_best.pt
 train_models/unet_vgg16_best.pt
 __pycache__/
 .claude/
+test.ipynb
+venv/
+*.pyc
+*.pyo
+*.pyd
