@@ -33,25 +33,25 @@ AVAILABLE_MODELS = {
     "unet_mini": {
         "name": "UNet Mini",
         "description": "UNet personnalisé léger (0.9M params)",
-        "path": Path("DATA/PROCESSED_256x512_augtrain/unet_mini_best.pt"),
+        "path": Path("train_models/unet_mini_best.pt"),
         "available": True
     },
     "hrnet": {
         "name": "HRNet-FPN",
         "description": "HRNet avec Feature Pyramid Network (11.2M params)",
-        "path": Path("DATA/PROCESSED_256x512_augtrain/hrnet_fpn_best.pt"),
+        "path": Path("train_models/hrnet_fpn_best.pt"),
         "available": True
     },
     "deeplabv3plus": {
         "name": "DeepLabV3+",
         "description": "DeepLabV3+ avec encodeur ResNet50 (26.7M params)",
-        "path": Path("DATA/PROCESSED_256x512_augtrain/deeplabv3plus_best.pt"),
+        "path": Path("train_models/deeplabv3plus_best.pt"),
         "available": True
     },
     "vgg16": {
         "name": "UNet-VGG16",
         "description": "UNet avec encodeur VGG16 (26.7M params)",
-        "path": Path("DATA/PROCESSED_256x512_augtrain/unet_vgg16_best.pt"),
+        "path": Path("train_models/unet_vgg16_best.pt"),
         "available": True
     }
 }
