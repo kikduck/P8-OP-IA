@@ -149,11 +149,11 @@ if uploaded_files:
     col_img1, col_img2 = st.columns(2)
 
     with col_img1:
-        st.image(file_selected, caption=f"Image originale: {file_selected.name}", use_container_width=True)
+        st.image(file_selected, caption=f"Image originale: {file_selected.name}", use_column_width=True)
 
     with col_img2:
         if st.session_state.segmentation_result is not None:
-            st.image(st.session_state.segmentation_result, caption="Résultat de la segmentation", use_container_width=True)
+            st.image(st.session_state.segmentation_result, caption="Résultat de la segmentation", use_column_width=True)
         else:
             # Placeholder vide si pas encore de prédiction
             st.info("Cliquez sur 'Prédire' pour voir la segmentation")
@@ -161,7 +161,7 @@ if uploaded_files:
     # Bouton "Prédire" centré en dessous
     col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
     with col_btn2:
-        if st.button("🔮 Prédire la segmentation", use_container_width=True):
+        if st.button("🔮 Prédire la segmentation"):
             # Envoyer l'image à l'API
             files = {"image": (file_selected.name, file_selected.getvalue(), file_selected.type)}
             try:
