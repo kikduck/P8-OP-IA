@@ -1,0 +1,5 @@
+/venv
+/DATA
+__pycache__/
+train_models/deeplabv3plus_best.pt
+train_models/unet_vgg16_best.pt
