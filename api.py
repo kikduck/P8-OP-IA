@@ -104,6 +104,13 @@ def load_model(model_name):
             current_model_name = model_name
             return True
 
+        # Sur Heroku, vider le cache avant de charger un nouveau modèle (économie RAM)
+        if os.environ.get("HEROKU_SLUG_COMMIT") and models_cache:
+            logger.info("Heroku: Vidage du cache pour économiser la RAM")
+            models_cache.clear()
+            import gc
+            gc.collect()
+
         model_path = AVAILABLE_MODELS[model_name]["path"]
         logger.info(f"Chargement du modèle '{model_name}' depuis {model_path}...")
 
@@ -228,9 +235,14 @@ def load_model_endpoint():
 @app.route("/predict", methods=["POST"])
 def predict():
     """Endpoint de prédiction"""
+    global model
+
+    # Lazy loading: charger le modèle à la demande s'il n'est pas encore chargé
     if model is None:
-        return jsonify({"error": "Modèle non chargé"}), 500
-    
+        logger.info(f"Lazy loading: chargement du modèle {current_model_name}...")
+        if not load_model(current_model_name):
+            return jsonify({"error": f"Impossible de charger le modèle {current_model_name}"}), 500
+
     if 'image' not in request.files:
         return jsonify({"error": "Aucune image fournie"}), 400
     
@@ -294,10 +306,15 @@ def predict():
 logger.info("Initialisation du cache des modèles...")
 init_models_info_cache()
 
-# Charger le modèle par défaut au démarrage
-logger.info(f"Chargement du modèle par défaut: {current_model_name}")
-if not load_model(current_model_name):
-    logger.warning(f"Impossible de charger le modèle {current_model_name}, l'API démarrera sans modèle pré-chargé")
+# Sur Heroku, ne pas charger le modèle au démarrage pour économiser la RAM
+# Le modèle sera chargé à la demande lors de la première requête /predict
+if os.environ.get("HEROKU_SLUG_COMMIT"):
+    logger.info("Running on Heroku - lazy loading enabled (model will be loaded on first prediction)")
+else:
+    # En local, charger le modèle par défaut au démarrage
+    logger.info(f"Chargement du modèle par défaut: {current_model_name}")
+    if not load_model(current_model_name):
+        logger.warning(f"Impossible de charger le modèle {current_model_name}, l'API démarrera sans modèle pré-chargé")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
