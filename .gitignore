@@ -1,5 +1,8 @@
 /venv
 /DATA
 __pycache__/
-train_models/deeplabv3plus_best.pt
-train_models/unet_vgg16_best.pt
+.claude/
+# Ignore all .pt files except unet_mini and hrnet
+train_models/*.pt
+!train_models/unet_mini_best.pt
+!train_models/hrnet_fpn_best.pt
